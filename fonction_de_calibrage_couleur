@@ -1,0 +1,184 @@
+# projet_vision_2D
+détection de couleur en vision 2D avec python sous opencv
+import cv2
+import numpy as np
+
+# List of colors to detect
+def detect_color(imageBGR, imageHSV, c):
+    if c == "blue":
+        blue = (255, 0, 0)
+        lower = np.array([100, 100, 100])  # Plage de couleurs inférieure (HSV)
+        upper = np.array([120, 255, 255])  # Plage de couleurs supérieure (HSV)
+        mask = cv2.inRange(imageHSV, lower, upper)
+        res = cv2.bitwise_and(imageBGR, imageBGR, mask=mask)
+        contours = image_filtered(res)
+        cv2.drawContours(imageBGR, contours, -1, blue, 3)
+        color_interpretation(imageBGR, contours, blue, "Blue")
+#        return lower, upper, blue  # Retourne les plages HSV et la couleur BGR associée
+    elif c == "orange":
+        orange = (0,69,255)
+        lower = np.array([166, 100, 130])#orange
+        upper = np.array([255, 255, 255])
+        mask = cv2.inRange(imageHSV, lower, upper)
+        res = cv2.bitwise_and(imageBGR, imageBGR, mask=mask)
+        contours = image_filtered(res)
+        cv2.drawContours(imageBGR, contours, -1, orange, 3)
+        color_interpretation(imageBGR, contours, orange, "Orange")
+#        return lower, upper,orange
+    elif c == "green":
+         green = (0,255,0)
+         lower=  np.array([23, 50, 100])#green
+         upper = np.array([100, 255, 255])
+         mask = cv2.inRange(imageHSV, lower, upper)
+         res = cv2.bitwise_and(imageBGR, imageBGR, mask=mask)
+         contours = image_filtered(res)
+         cv2.drawContours(imageBGR, contours, -1, green, 3)
+         color_interpretation(imageBGR, contours, green, "Green")
+#         return lower, upper,green
+    elif c == "pink":
+         pink = (133,21,199)
+         lower = np.array([150, 180, 100])#pink
+         upper = np.array([180, 255, 255])
+         mask = cv2.inRange(imageHSV, lower, upper)
+         res = cv2.bitwise_and(imageBGR, imageBGR, mask=mask)
+         contours = image_filtered(res)
+         cv2.drawContours(imageBGR, contours, -1, pink, 3)
+         color_interpretation(imageBGR, contours, pink, "Pink")
+#         return lower, upper,pink
+    elif c == "purple":
+          purple = (219,112,147)
+          lower = np.array([120, 120, 120])#purple
+          upper = np.array([150, 255, 255])
+          mask = cv2.inRange(imageHSV, lower, upper)
+          res = cv2.bitwise_and(imageBGR, imageBGR, mask=mask)
+          contours = image_filtered(res)
+          cv2.drawContours(imageBGR, contours, -1, purple, 3)
+          color_interpretation(imageBGR, contours, purple, "Purple")
+#          return lower, upper,purple
+    elif c == "yellow":
+           yellow = (0,255,255)
+           lower = np.array([2, 70, 120])#yellow
+           upper = np.array([24, 255, 255])
+           mask = cv2.inRange(imageHSV, lower, upper)
+           res = cv2.bitwise_and(imageBGR, imageBGR, mask=mask)
+           contours = image_filtered(res)
+           cv2.drawContours(imageBGR, contours, -1, yellow, 3)
+           color_interpretation(imageBGR, contours, yellow, "Yellow")
+#           return lower, upper,yellow
+    else:
+           white = (255,255,255)
+           lower = np.array([110, 70, 170])#white
+           upper = np.array([150, 120, 255])
+           mask = cv2.inRange(imageHSV, lower, upper)
+           res = cv2.bitwise_and(imageBGR, imageBGR, mask=mask)
+           contours = image_filtered(res)
+           cv2.drawContours(imageBGR, contours, -1, white, 3)
+           color_interpretation(imageBGR, contours, white, "White")
+#           return lower, upper,white
+# Function to remove noise, smooth the image and apply treshold to detect well the color we want
+def image_filtered(image):
+    kernel = np.ones((17,17),np.uint8)
+    res_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    opening = cv2.morphologyEx(res_gray, cv2.MORPH_OPEN, kernel)
+    closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
+    res_gaus = cv2.GaussianBlur(closing, (7, 9), cv2.BORDER_DEFAULT)
+    ret,binary = cv2.threshold(res_gaus,0,255,cv2.THRESH_BINARY)
+    contours, hierarchy = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    return contours
+
+# Function to define all the four sectors visible in the video 
+def define_sector(imageBGR, x, y, w, h):
+    if (y+round(h/2) < 69) and (y+round(h/2) > 0):
+        cv2.putText(imageBGR,"0", (x+round(w/4), y+h-2), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        sector = 0
+    if (y+round(h/2) < 215) and (y+round(h/2) > 70):
+        cv2.putText(imageBGR,"1", (x+round(w/4), y+h-12), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        sector = 1
+    if (y+round(h/2) < 389) and (y+round(h/2) > 216):
+        cv2.putText(imageBGR,"2", (x+round(w/4), y+h-15), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        sector = 2
+    if (y+round(h/2) < 499) and (y+round(h/2) > 390):
+        cv2.putText(imageBGR,"3", (x+round(w/4)-25, y+h), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        sector = 3
+    return sector
+
+# Function to give number for each color when this one is detected
+def put_color_number(imageBGR, sector, x, y, w, h):
+    if sector == 0:
+        if x < 174:
+            cv2.putText(imageBGR,"1", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        else:
+            cv2.putText(imageBGR,"2", (x+round(w/4), y+20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+    elif sector == 1:
+        if x < 174:
+            cv2.putText(imageBGR,"6", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        elif x > 175 and x < 495:
+            cv2.putText(imageBGR,"5", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        elif x > 496 and x < 684:
+            cv2.putText(imageBGR,"3", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        else:
+            cv2.putText(imageBGR,"4", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+    elif sector == 2:
+        if x < 174:
+            cv2.putText(imageBGR,"9", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        elif x > 175 and x < 600:
+            cv2.putText(imageBGR,"8", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        else:
+            cv2.putText(imageBGR,"7", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+    else:
+        if x < 100:
+            cv2.putText(imageBGR,"12", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        elif x > 101 and x < 340:
+            cv2.putText(imageBGR,"11", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        elif x > 341 and x < 540  and y > 440:
+            cv2.putText(imageBGR,"13", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        elif x > 470 and x < 667  and y < 440:
+              cv2.putText(imageBGR,"10", (x+round(w/4), y+27), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        else:
+            cv2.putText(imageBGR,"14", (x+round(w/4)+70, y+8), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+
+# Function to write on the color detected
+def color_interpretation(imageBGR, contours, colorBGR, name):
+    for nb in range(len(contours)):
+        x, y, w, h = cv2.boundingRect(contours[nb])
+        cv2.rectangle(imageBGR,(x,y),(x+w,y+h),colorBGR,2)
+        cv2.putText(imageBGR,name, (x+round(w/4), y+round(h/2)+10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
+        sector = define_sector(imageBGR, x, y, w, h)
+        put_color_number(imageBGR, sector, x, y, w, h)
+
+# Dictionnaire pour stocker les informations de chaque secteur
+sector_info = {}
+
+def save_sector_info(sector, number, color):
+    if sector not in sector_info:
+        sector_info[sector] = []
+    sector_info[sector].append((number, color))
+
+def write_sector_info_to_file(file_path):
+    with open(file_path, "w") as file:
+        for sector, info in sector_info.items():
+            for number, color in info:
+                file.write(f"Sector: {sector}, Number: {number}, Color: {color}\n")
+
+file_path = "resultat.txt"
+color_info = [
+    (0, 1, "purple"),
+    (0, 2, "yellow"),
+    (1, 6, "pink"),
+    (1, 5, "white"),
+    (1, 3, "green"),
+    (1, 4, "orange"),
+    (2, 2, "green"),
+    (2, 2, "purple"),
+    (2, 3, "yellow"),
+    (3, 12, "blue"),
+    (3, 11, "orange"),
+    (3, 13, "yellow"),
+    (3, 10, "blue"),
+    (3, 14, "pink"),
+]
+for sector, number, color in color_info:
+    save_sector_info(sector, number, color)
+write_sector_info_to_file(file_path)
+print(f"Informations enregistrées dans {file_path}")
+
